@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuestra Historia ❤️✨</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  overflow: hidden;
+  background: radial-gradient(circle, #ffb3c6, #ff4d6d);
+}
+
+/* Canvas y contenido del árbol */
+canvas { display: block; opacity:0; transition: opacity 1s ease; }
+#textBox, #counter { position:absolute; left:40px; opacity:0; transition: opacity 1s ease; color:#5a0013; text-shadow:0 0 6px rgba(255,255,255,0.3);}
+#textBox { top:36%; width:360px; font-size:22px; white-space: pre-line; }
+#counter { bottom:35px; width:360px; padding:18px 22px; border-radius:18px; background: linear-gradient(135deg, #fff0f3, #ffd6e0); box-shadow:0 8px 25px rgba(0,0,0,0.25); font-size:18px; line-height:1.4; color:#6a040f; animation:breathe 3s ease-in-out infinite;}
+#counter strong { font-size:22px; display:block; margin-bottom:6px; color:#9d0208;}
+@keyframes breathe {0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+
+/* Sobre */
+.contenedor { width:400px; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:999; }
+.envoltura-sobre { position:relative; background:#ffe3ed; border-radius:15px; box-shadow:0 0 40px rgba(0,0,0,0.2); cursor:pointer; overflow:hidden; transition: opacity 1s ease;}
+.sobre { width:400px; height:300px; position:relative; }
+.sobre::before { content:""; position:absolute; top:0; left:0; right:0; z-index:4; border-top:180px solid #ffccd5; border-left:200px solid transparent; border-right:200px solid transparent; transform-origin:top; transition: transform 0.8s ease-in-out; border-radius:10px; }
+.solapa-derecha, .solapa-izquierda { position:absolute; top:0; width:100%; height:100%; background:#ffc1d1; border-radius:10px; }
+.solapa-derecha { right:0; clip-path: polygon(100% 0, 0 100%, 100% 100%); }
+.solapa-izquierda { left:0; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+
+/* Corazón (botón) */
+.corazon { position:absolute; top:50%; left:50%; width:50px; height:50px; background:#ff477e; transform:translate(-50%,-50%) rotate(45deg); z-index:999; cursor:pointer; display:flex; justify-content:center; align-items:center; font-size:20px; color:white; font-weight:bold; }
+.corazon::before,.corazon::after { content:""; position:absolute; width:50px; height:50px; background:#ff477e; border-radius:100%; }
+.corazon::before{ top:-25px; } .corazon::after{ right:25px; }
+
+/* Animación sobre abierto */
+.abierto .sobre::before { transform: rotateX(180deg); z-index:0; }
+.abierto .corazon { transform: rotate(90deg); transition-delay:0.4s; }
+
+</style>
+</head>
+<body>
+
+<!-- SOBRE -->
+<div class="contenedor">
+  <div class="envoltura-sobre">
+    <div class="sobre"></div>
+    <div class="corazon">💌</div>
+    <div class="solapa-derecha"></div>
+    <div class="solapa-izquierda"></div>
+  </div>
+</div>
+
+<!-- PÁGINA DEL ÁRBOL -->
+<canvas id="canvas"></canvas>
+<div id="textBox"><div id="text"></div></div>
+<div id="counter"></div>
+
+<!-- MÚSICA LOCAL -->
+<audio id="bgMusic" src="audiuo.mp3" loop></audio>
+
+<script>
+// ----------------- ELEMENTOS -----------------
+const seal = document.querySelector(".corazon");
+const envoltura = document.querySelector(".envoltura-sobre");
+const canvas = document.getElementById("canvas");
+const textBox = document.getElementById("textBox");
+const counterDiv = document.getElementById("counter");
+const music = document.getElementById("bgMusic");
+const startSecond = 18.3; // Cambia aquí el segundo donde empieza la música
+
+// ----------------- ÁRBOL -----------------
+const ctx = canvas.getContext("2d");
+function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+resize(); window.addEventListener("resize", resize);
+
+const isMobile = window.innerWidth < 768;
+let branches=[], hearts=[], fallingHearts=[], startedText=false;
+const message = `Gracias por apoyarme siempre en todo y estar conmigo cuando mas lo necesito. De la misma manera yo estare contigo siempre que me necesites, con esta pagina quiero decirte que cada año, dia o hora que marque este contador siempre estare a tu lado
+
+🤍`;
+let textIndex=0;
+const startDate=new Date(2025,0,10);
+
+function drawHeart(x,y,s,alpha=1){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.fillStyle="#ff4d6d";
+  ctx.shadowColor="#ff87a2";
+  ctx.shadowBlur=Math.random()<0.1?12:8;
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.bezierCurveTo(x-s,y-s,x-2*s,y+s/2,x,y+2*s);
+  ctx.bezierCurveTo(x+2*s,y+s/2,x+s,y-s,x,y);
+  ctx.fill();
+  ctx.restore();
+}
+
+class Branch{
+  constructor(x,y,angle,length,width){this.x=x;this.y=y;this.angle=angle;this.length=0;this.maxLength=length;this.width=width;this.finished=false;}
+  grow(){
+    if(this.length<this.maxLength){ this.length+=2; return;}
+    if(this.finished) return; this.finished=true;
+    const endX=this.x+Math.cos(this.angle)*this.length;
+    const endY=this.y+Math.sin(this.angle)*this.length;
+    if(this.width>2){
+      branches.push(
+        new Branch(endX,endY,this.angle-0.4+Math.random()*0.2,this.maxLength*0.7,this.width*0.7),
+        new Branch(endX,endY,this.angle+0.4-Math.random()*0.2,this.maxLength*0.7,this.width*0.7)
+      );
+    }
+    if(this.width<3){
+      for(let i=0;i<12;i++){
+        hearts.push({x:endX+Math.random()*30-15,y:endY+Math.random()*30-15,size:isMobile?5:6,alpha:0,scale:Math.random()*0.5+0.5,growing:true});
+      }
+    }
+  }
+  draw(){ ctx.strokeStyle="#5a2a0c"; ctx.lineWidth=this.width; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+Math.cos(this.angle)*this.length,this.y+Math.sin(this.angle)*this.length); ctx.stroke();}
+}
+
+// ----------------- ANIMACIÓN -----------------
+let animationStarted=false;
+function startAnimation(){
+  if(animationStarted) return;
+  animationStarted=true;
+  branches.push(new Branch(canvas.width*(isMobile?0.6:0.72),canvas.height,-Math.PI/2,isMobile?170:200,isMobile?8:10));
+
+  function drawHeartsAnim(){
+    hearts.forEach(h=>{
+      if(h.growing) h.scale+=0.02; else h.scale-=0.01;
+      if(h.scale>=1) h.growing=false; if(h.scale<=0.5) h.growing=true;
+      h.alpha=Math.min(1,h.alpha+0.01);
+      drawHeart(h.x,h.y,h.size*h.scale,h.alpha);
+      if(fallingHearts.length<(isMobile?70:150)&&Math.random()<0.08){
+        fallingHearts.push({x:h.x,y:h.y,size:h.size,alpha:1,vx:-0.5+Math.random(),vy:0.3+Math.random()*0.6});
+      }
+    });
+  }
+
+  function drawFalling(){
+    fallingHearts.forEach(h=>{h.x+=h.vx;h.y+=h.vy;h.alpha-=0.003; drawHeart(h.x,h.y,h.size,h.alpha);});
+    fallingHearts=fallingHearts.filter(h=>h.alpha>0);
+  }
+
+  function typeText(){
+    if(textIndex<message.length){ document.getElementById("text").innerHTML+=message[textIndex++]; setTimeout(typeText,90);}
+  }
+
+  function updateCounter(){
+    const diff=new Date()-startDate;
+    const s=Math.floor(diff/1000)%60;
+    const m=Math.floor(diff/60000)%60;
+    const h=Math.floor(diff/3600000)%24;
+    const d=Math.floor(diff/86400000);
+    const y=Math.floor(d/365);
+    const mo=Math.floor((d%365)/30);
+    const da=(d%365)%30;
+    counterDiv.innerHTML=`<strong>🤍 Llevamos juntos</strong>${y} años · ${mo} meses · ${da} días<br>${h}h ${m}m ${s}s`;
+  }
+  setInterval(updateCounter,1000); updateCounter();
+
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    branches.forEach(b=>{b.grow();b.draw();});
+    drawHeartsAnim(); drawFalling();
+    if(!startedText && hearts.length>15){ startedText=true; setTimeout(typeText,900);}
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// ----------------- ABRIR SOBRE -----------------
+seal.addEventListener("click", ()=>{
+  envoltura.classList.add("abierto");
+
+  setTimeout(()=>{
+    envoltura.style.transition="opacity 1s ease";
+    envoltura.style.opacity=0;
+    setTimeout(()=>{
+      envoltura.style.display="none";
+      canvas.style.opacity=1;
+      textBox.style.opacity=1;
+      counterDiv.style.opacity=1;
+
+      // Música
+      music.currentTime = startSecond;
+      music.play();
+
+      // Iniciar animación
+      startAnimation();
+    },1000);
+  },900);
+});
+</script>
+</body>
+</html>

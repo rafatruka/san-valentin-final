@@ -1,0 +1,132 @@
+/* -------------------------------
+   ESTILOS DEL SOBRE Y CORAZÓN
+---------------------------------*/
+:root{
+    --fondo-sobre: #ffe3ed;
+    --solapa-sobre: #ffccd5;
+    --cuerpo-sobre: #ffc1d1;
+    --sombra: rgba(0,0,0,0.2);
+}
+
+body{
+    margin:0;
+    font-family:'Georgia', serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background: radial-gradient(circle,#ffb3c6,#ff4d6d);
+    overflow:hidden;
+}
+
+.envoltura-sobre{
+    position: relative;
+    width: 400px;
+    height: 300px;
+    background-color: var(--fondo-sobre);
+    box-shadow: 0 0 40px var(--sombra);
+    border-radius: 15px;
+    transition: opacity 0.5s ease;
+    z-index: 100;
+}
+
+.sobre{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+}
+
+.sobre::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    border-top:180px solid var(--solapa-sobre);
+    border-left:200px solid transparent;
+    border-right:200px solid transparent;
+    border-radius:10px;
+    transform-origin: top;
+    transition: transform 0.7s ease-in-out;
+}
+
+.solapa-derecha, .solapa-izquierda{
+    position:absolute;
+    top:0;
+    width:100%;
+    height:100%;
+    background-color: var(--cuerpo-sobre);
+    border-radius:10px;
+}
+
+.solapa-derecha{ clip-path: polygon(100% 0,0 100%,100% 100%);}
+.solapa-izquierda{ clip-path: polygon(0 0,0 100%,100% 100%);}
+
+.corazon{
+    position: absolute;
+    top:50%;
+    left:50%;
+    width:50px;
+    height:50px;
+    background-color:#ff477e;
+    transform:translate(-50%,-50%) rotate(45deg);
+    z-index:1000;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:24px;
+    color:white;
+    font-weight:bold;
+}
+
+.corazon::before,.corazon::after{ display:none; }
+
+.abierto .sobre::before{ transform: rotateX(180deg);}
+.abierto .corazon{ transform: translate(-50%,-50%) rotate(45deg); transition:none;}
+
+/* -------------------------------
+   ESTILOS DE LA PÁGINA DEL ÁRBOL
+---------------------------------*/
+.pagina-oculta{ display:none; opacity:0; transition: opacity 1s ease; }
+
+canvas{ display:block; }
+
+#textBox{
+    position:absolute;
+    left:40px;
+    top:36%;
+    width:360px;
+    font-size:22px;
+    color:#5a0013;
+    white-space:pre-line;
+    text-shadow: 0 0 6px rgba(255,255,255,0.3);
+}
+
+#counter{
+    position:absolute;
+    left:40px;
+    bottom:35px;
+    width:360px;
+    padding:18px 22px;
+    border-radius:18px;
+    background: linear-gradient(135deg,#fff0f3,#ffd6e0);
+    box-shadow:0 8px 25px rgba(0,0,0,0.25);
+    color:#6a040f;
+    font-size:18px;
+    line-height:1.4;
+    animation:breathe 3s ease-in-out infinite;
+}
+
+#counter strong{ font-size:22px; display:block; margin-bottom:6px; color:#9d0208; }
+
+@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+
+/* RESPONSIVE */
+@media (max-width:768px){
+    #textBox{ left:20px; top:30%; width:calc(100% - 40px); font-size:18px;}
+    #counter{ left:20px; bottom:20px; width:calc(100% - 40px); font-size:16px; padding:14px 16px;}
+    #counter strong{ font-size:18px;}
+}
